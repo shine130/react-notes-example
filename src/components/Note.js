@@ -3,6 +3,7 @@ import Editor from './Editor'
 import moment from 'moment'
 import 'moment/locale/zh-cn'
 import _ from 'lodash'
+import {loadCollection,db} from '../database'
 
 moment.locale('zh-CN')
 
@@ -12,7 +13,8 @@ class Note extends Component {
     entity:this.props.entity,
     body:this.props.entity.body,
     updated:this.props.entity.meta.updated || this.props.entity.meta.created,
-    open:false
+    open:false,
+    destroyEntity:this.props.destroyEntity
   }
 
   updated(){
@@ -35,6 +37,25 @@ class Note extends Component {
     })
   }
 
+  updateEntity = (event) => {
+    const _body = event.target.value
+
+    this.setState({
+      body:_body
+    })
+
+    loadCollection('notes')
+      .then((collection) => {
+        const entity = this.state.entity 
+        entity.body = _body 
+        collection.update(entity)
+        db.saveDatabase()
+      })
+
+  }
+
+
+
   render () {
     const {entity,body,updated} = this.state
     return (
@@ -48,11 +69,11 @@ class Note extends Component {
           </div>
           <div className="extra">
             {this.state.open &&
-              <Editor />
+              <Editor entity={this.state.entity} updateEntity={this.updateEntity} />
             }
             {this.words()}字
             {this.state.open &&
-              <i className="right floated trash outline icon">X</i>
+              <i className="right floated trash outline icon" onClick={() => this.state.destroyEntity(this.state.entity)}>X</i>
             }
           </div>
         </div>

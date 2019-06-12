@@ -56,6 +56,22 @@ class Notes extends Component {
 
   }
  
+  destroyEntity = (entity) => {
+    const _entities = this.state.entities.filter((_entity) => {
+      return _entity.$loki !== entity.$loki
+    })
+
+    this.setState({
+      entities:_entities
+    })
+
+    loadCollection('notes')
+      .then((collection) => {
+        collection.remove(entity)
+        db.saveDatabase()
+      })
+
+  }
 
   render () {
 
@@ -64,6 +80,7 @@ class Notes extends Component {
       <Note
         key={entity.$loki}
         entity={entity}
+        destroyEntity={this.destroyEntity}
       />
     )
 
